@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+#from sqlalchemy.orm import Session
 from src.database.models import Embedding, SessionLocal
 from src.embedding.generator import EmbeddingGenerator
 import numpy as np
