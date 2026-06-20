@@ -42,7 +42,7 @@ class Pipeline:
         # 4. Gerar embeddings e salvar no vetorial
         self.vector_store.inserir_chunks(doc_id, chunks)
         
-        print(f"✅ Documento '{titulo}' processado!")
+        print(f"✅ Documento '{doc.titulo}' processado!")
         print(f"   - ID: {doc_id}")
         print(f"   - Chunks: {len(chunks)}")
         

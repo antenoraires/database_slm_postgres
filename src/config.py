@@ -9,6 +9,7 @@ DATABASE_URL = os.getenv(
 )
 
 # Modelo de embedding (multilíngue, leve e eficiente)
+#EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
 EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
 # Tamanho dos chunks de texto

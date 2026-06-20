@@ -30,6 +30,7 @@ class Embedding(Base):
     documento_id = Column(Integer)       # FK para documentos
     chunk_texto = Column(Text)           # Trecho do texto
     embedding = Column(Vector(384))      # Dimensão do MiniLM-L12-v2
+    #embedding = Column(Vector(768))
     posicao_chunk = Column(Integer)      # Ordem do chunk no documento
 
 # Cria as tabelas (rode uma vez)
