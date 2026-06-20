@@ -1,11 +1,10 @@
 from src.pipeline import Pipeline
 
 import os
-from tempfile import NamedTemporaryFile
 from dotenv import load_dotenv
 
 from minio import Minio
-from src.ingest.ingest_minio import inserir_arquivo, ler_bytes, listar_caminhos
+from src.ingest.ingest_minio import ingest_documento, listar_caminhos
 
 load_dotenv()
 
@@ -16,7 +15,7 @@ MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
 #path_local = "assents/rsl_antenor.pdf"
 #path_local = "assents/WMamba.pdf"
 #path_local = "assents/Fake-Mamba.pdf"
-path_local = None  # para testar busca sem ingestão recente
+path_local = "assents/Shallow.pdf"  # para testar busca sem ingestão recente
 BUCKET_NAME = "documentos"
 
 client = Minio(
@@ -29,22 +28,21 @@ client = Minio(
 p = Pipeline()
 
 if path_local is not None:
-# inserindo arquivo
-    inserir_arquivo(client, path_local, BUCKET_NAME, os.path.basename(path_local))
-    print ("Arquivo enviado com sucesso!")
-
-    # Processa um PDF que já está armazenado no MinIO
-    dados_pdf = ler_bytes(client, BUCKET_NAME, os.path.basename(path_local))
-    with NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-        tmp.write(dados_pdf)
-        caminho_temp = tmp.name
-
-    p.processar_documento(
-        caminho_temp,
+    resultado = ingest_documento(
+        client,
+        path_local,
+        BUCKET_NAME,
+        nome_no_minio=os.path.basename(path_local),
         tipo="pdf",
         titulo=os.path.basename(path_local),
+        metadata={
+            "x-amz-meta-origem": "upload-usuario",
+            "x-amz-meta-tipo": "documento"
+        },
         salvar_txt_em=f"assents/{os.path.splitext(os.path.basename(path_local))[0]}.txt"
     )
+    print("Upload + ingestão concluídos:", resultado)
+
 # lista = listar_caminhos(client, BUCKET_NAME, prefixo="")
 # print(lista)
 

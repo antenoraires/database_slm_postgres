@@ -1,7 +1,8 @@
 from minio import Minio
 from minio.error import S3Error
 import io
-
+import os
+from src.pipeline import Pipeline
 
 
 def inserir_arquivo(client: Minio, caminho_local: str, 
@@ -25,6 +26,48 @@ def inserir_arquivo(client: Minio, caminho_local: str,
         metadata=metadata or {}
     )
     print(f"Arquivo '{nome_no_minio}' enviado com sucesso.")
+
+
+def ingest_documento(
+    client: Minio,
+    caminho_local: str,
+    BUCKET_NAME: str,
+    nome_no_minio: str | None = None,
+    tipo: str = "pdf",
+    titulo: str | None = None,
+    metadata: dict[str, str] | None = None,
+    salvar_txt_em: str | None = None
+) -> dict:
+    """
+    Envia um arquivo para o MinIO e processa o documento no banco.
+
+    Retorna informações sobre o objeto e o documento criado.
+    """
+    if nome_no_minio is None:
+        nome_no_minio = os.path.basename(caminho_local)
+
+    inserir_arquivo(
+        client,
+        caminho_local,
+        BUCKET_NAME,
+        nome_no_minio,
+        metadata=metadata
+    )
+
+    pipeline = Pipeline()
+    doc_id = pipeline.processar_documento(
+        caminho_local,
+        tipo=tipo,
+        titulo=titulo or nome_no_minio,
+        salvar_txt_em=salvar_txt_em
+    )
+
+    return {
+        "bucket": BUCKET_NAME,
+        "object_name": nome_no_minio,
+        "documento_id": doc_id,
+        "salvar_txt_em": salvar_txt_em,
+    }
 
 
 def ler_bytes(client: Minio, BUCKET_NAME: str, nome_no_minio: str) -> bytes:
