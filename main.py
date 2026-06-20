@@ -15,7 +15,8 @@ MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
 #path_local = "assents/rsl_antenor.pdf"
 #path_local = "assents/WMamba.pdf"
 #path_local = "assents/Fake-Mamba.pdf"
-path_local = "assents/Shallow.pdf"  # para testar busca sem ingestão recente
+#path_local = "assents/Shallow.pdf"  
+path_local = None
 BUCKET_NAME = "documentos"
 
 client = Minio(
@@ -47,7 +48,7 @@ if path_local is not None:
 # print(lista)
 
 # Busca inteligente
-resultados = p.buscar("Fake Mamba?", top_k=5)
+resultados = p.buscar("rostos gerados por GAN?", top_k=5)
 
 for r in resultados:
     print(f"Score: {r['similaridade']:.3f}")
