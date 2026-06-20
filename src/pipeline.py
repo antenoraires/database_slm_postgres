@@ -10,19 +10,20 @@ class Pipeline:
         self.chunker = TextChunker(CHUNK_SIZE, CHUNK_OVERLAP)
         self.vector_store = VectorStore()
     
-    def processar_documento(self, fonte: str, tipo: str = "pdf", titulo: str = None):
+    def processar_documento(
+        self,
+        fonte: str,
+        tipo: str = "pdf",
+        titulo: str = None,
+        salvar_txt_em: str | None = None
+    ):
         """
         Fluxo completo: extrair → salvar → chunkar → embeddar
+
+        salvar_txt_em: caminho opcional para gravar o texto extraído em .txt.
         """
-        # 1. Extrair texto
-        if tipo == "pdf":
-            texto = self.extractor.from_pdf(fonte)
-        elif tipo == "url":
-            texto = self.extractor.from_url(fonte)
-        elif tipo == "txt":
-            texto = self.extractor.from_txt(fonte)
-        else:
-            raise ValueError(f"Tipo '{tipo}' não suportado")
+        # 1. Extrair texto (e opcionalmente salvar em arquivo .txt)
+        texto = self.extractor.to_txt(fonte, tipo=tipo, destino=salvar_txt_em)
         
         # 2. Salvar no banco relacional
         session = SessionLocal()
