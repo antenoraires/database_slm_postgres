@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+#from sqlalchemy.orm import Session
 from src.database.models import Embedding, SessionLocal
 from src.embedding.generator import EmbeddingGenerator
 import numpy as np
@@ -43,15 +43,22 @@ class VectorStore:
             # Busca por similaridade de cosseno no banco
             resultados = session.query(Embedding).order_by(
                 Embedding.embedding.cosine_distance(vetor_query)
-            ).limit(top_k).all()
+            ).limit(top_k * 2).all()
             
-            return [
-                {
+            vistos = set()
+            resposta = []
+            for r in resultados:
+                if r.chunk_texto in vistos:
+                    continue
+                vistos.add(r.chunk_texto)
+                resposta.append({
                     "texto": r.chunk_texto,
                     "documento_id": r.documento_id,
                     "similaridade": self._cosine_similarity(vetor_query, np.asarray(r.embedding))
-                }
-                for r in resultados
-            ]
+                })
+                if len(resposta) >= top_k:
+                    break
+
+            return resposta
         finally:
             session.close()

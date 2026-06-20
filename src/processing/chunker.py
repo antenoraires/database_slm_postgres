@@ -1,19 +1,36 @@
+import re
 from typing import List
 
 class TextChunker:
+    SENTENCE_RE = re.compile(r'(?<=[.!?])\s+')
+
     def __init__(self, chunk_size: int = 512, overlap: int = 50):
         self.chunk_size = chunk_size
         self.overlap = overlap
-    
+
     def chunk(self, texto: str) -> List[str]:
-        """Divide texto em chunks com sobreposição"""
-        palavras = texto.split()
+        texto = " ".join(texto.split())
+        sentences = self.SENTENCE_RE.split(texto)
         chunks = []
-        
-        i = 0
-        while i < len(palavras):
-            chunk = palavras[i:i + self.chunk_size]
-            chunks.append(" ".join(chunk))
-            i += self.chunk_size - self.overlap
-        
+        current = []
+
+        for sentence in sentences:
+            words = sentence.split()
+            if not words:
+                continue
+
+            if len(current) + len(words) > self.chunk_size:
+                if current:
+                    chunks.append(" ".join(current))
+                    current = current[-self.overlap:]
+                if len(words) > self.chunk_size:
+                    chunks.append(" ".join(words))
+                    current = []
+                    continue
+
+            current.extend(words)
+
+        if current:
+            chunks.append(" ".join(current))
+
         return chunks
