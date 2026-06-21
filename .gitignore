@@ -206,6 +206,9 @@ cython_debug/
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
+# Ignore local asset files that should not go to Git
+assents/
+
 # Ruff stuff:
 .ruff_cache/
 
