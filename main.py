@@ -11,11 +11,7 @@ load_dotenv()
 MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "localhost:9000")
 MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY")
 MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
-
-#path_local = "assents/rsl_antenor.pdf"
-#path_local = "assents/WMamba.pdf"
-#path_local = "assents/Fake-Mamba.pdf"
-#path_local = "assents/Shallow.pdf"  
+  
 BUCKET_NAME = "documentos"
 pasta_local = "assents"  
 
@@ -26,6 +22,7 @@ client = Minio(
     secure=False  # True em produção (HTTPS)
 )
 
+# iniciando pipeline
 p = Pipeline()
 
 for path_local in listar_arquivos_pasta(pasta_local):
@@ -43,9 +40,6 @@ for path_local in listar_arquivos_pasta(pasta_local):
         salvar_txt_em=f"assents/backup/{os.path.splitext(os.path.basename(path_local))[0]}.txt"
     )
     print("Upload + ingestão concluídos:", resultado)
-
-# lista = listar_caminhos(client, BUCKET_NAME, prefixo="")
-# print(lista)
 
 # Busca inteligente
 resultados = p.buscar("rostos gerados por GAN?", top_k=5)
