@@ -40,9 +40,9 @@ Defina as variáveis de ambiente para acessar o MinIO e o banco:
 Exemplo em `.env`:
 
 ```env
-MINIO_ENDPOINT=localhost:9000
-MINIO_ACCESS_KEY=minioadmin
-MINIO_SECRET_KEY=minioadmin
+MINIO_ENDPOINT=
+MINIO_ACCESS_KEY=
+MINIO_SECRET_KEY=
 ```
 
 ## Instalação
@@ -87,6 +87,33 @@ Ou, se você usa `uv`:
 
 ```bash
 uv run python main.py
+```
+
+### API de busca com FastAPI
+
+O projeto também expõe uma página web e um endpoint de busca via FastAPI.
+
+- `GET /` mostra um formulário simples para enviar perguntas.
+- `POST /search` executa `p.buscar(...)`.
+
+#### Validação do endpoint `/search`
+
+O FastAPI valida o payload antes de executar a busca:
+
+- `query` deve ter entre 3 e 300 caracteres.
+- `top_k` deve ser um inteiro entre 1 e 20.
+
+Exemplo de uso :
+
+```bash
+uvicorn src.api:app --reload
+```
+
+
+```bash
+curl -X POST http://127.0.0.1:8000/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "rostos gerados por GAN?", "top_k": 5}'
 ```
 
 ### Ingestão de arquivos
