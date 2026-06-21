@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from src.pipeline import Pipeline
+from src.rag import gerar_resposta, is_rag_available
 
 app = FastAPI()
 
@@ -20,6 +21,7 @@ class SearchResponse(BaseModel):
     query: str
     top_k: int
     resultados: list[SearchResult]
+    resposta_rag: str | None = None
 
 @app.get("/health")
 def health_check():
@@ -28,10 +30,14 @@ def health_check():
 @app.post("/search", response_model=SearchResponse)
 def search(request: SearchRequest):
     resultados = pipeline.buscar(request.query, top_k=request.top_k)
+    resposta_rag = None
+    if is_rag_available():
+        resposta_rag = gerar_resposta(request.query, resultados, top_k=request.top_k)
     return SearchResponse(
         query=request.query,
         top_k=request.top_k,
-        resultados=[SearchResult(**r) for r in resultados]
+        resultados=[SearchResult(**r) for r in resultados],
+        resposta_rag=resposta_rag,
     )
 
 @app.get("/", response_class=HTMLResponse)
