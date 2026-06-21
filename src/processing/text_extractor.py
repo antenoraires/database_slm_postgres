@@ -2,6 +2,8 @@ import PyPDF2
 import requests
 from bs4 import BeautifulSoup
 from pathlib import Path
+import re
+import unicodedata
 
 class TextExtractor:
     @staticmethod
@@ -11,7 +13,7 @@ class TextExtractor:
             leitor = PyPDF2.PdfReader(f)
             for pagina in leitor.pages:
                 texto += pagina.extract_text() + "\n"
-        return texto
+        return TextExtractor.clean_text(texto)
     
     @staticmethod
     def from_url(url: str) -> str:
@@ -20,11 +22,40 @@ class TextExtractor:
         # Remove scripts e estilos
         for tag in sopa(['script', 'style']):
             tag.decompose()
-        return sopa.get_text(separator='\n', strip=True)
+        texto = sopa.get_text(separator='\n', strip=True)
+        return TextExtractor.clean_text(texto)
     
     @staticmethod
     def from_txt(caminho: str) -> str:
-        return Path(caminho).read_text(encoding='utf-8')
+        texto = Path(caminho).read_text(encoding='utf-8')
+        return TextExtractor.clean_text(texto)
+
+    @staticmethod
+    def normalize_text(texto: str) -> str:
+        texto = texto.replace('\r\n', '\n').replace('\r', '\n')
+        texto = texto.replace('\t', ' ')
+        texto = unicodedata.normalize('NFKC', texto)
+        texto = re.sub(r'(\w+)-\n(\w+)', r'\1\2', texto)
+        texto = re.sub(r'([a-zà-úÀ-Ú0-9])\n([a-zà-ú])', r'\1 \2', texto)
+        texto = re.sub(r'(?im)^(?:p(?:á|a)gina|page|pg|p)\s*\d+\s*(?:de|of)\s*\d+\s*$', '', texto)
+        texto = re.sub(r'(?m)^\s*\d+\s*/\s*\d+\s*$', '', texto)
+        texto = re.sub(r'[ \t]+', ' ', texto)
+        texto = re.sub(r'\n{3,}', '\n\n', texto)
+        texto = texto.strip()
+        return texto
+
+    @staticmethod
+    def remove_control_characters(texto: str) -> str:
+        return ''.join(
+            ch for ch in texto
+            if ch == '\n' or unicodedata.category(ch)[0] != 'C'
+        )
+
+    @staticmethod
+    def clean_text(texto: str) -> str:
+        texto = TextExtractor.remove_control_characters(texto)
+        texto = TextExtractor.normalize_text(texto)
+        return texto
 
     @staticmethod
     def save_text(texto: str, destino: str) -> str:

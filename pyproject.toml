@@ -19,5 +19,7 @@ dependencies = [
     "ruff>=0.15.18",
     "sentence-transformers>=2.2.0",
     "sqlalchemy>=2.0.0",
+    "torch>=2.12.1",
+    "transformers>=5.12.1",
     "uvicorn>=0.49.0",
 ]
