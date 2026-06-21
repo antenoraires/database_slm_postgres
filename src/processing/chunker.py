@@ -2,7 +2,7 @@ import re
 from typing import List
 
 class TextChunker:
-    SENTENCE_RE = re.compile(r'(?<=[.!?])\s+')
+    SENTENCE_RE = re.compile(r'(?<=[.!?])\s+|\n+')
 
     def __init__(self, chunk_size: int = 512, overlap: int = 50):
         self.chunk_size = chunk_size
@@ -19,16 +19,25 @@ class TextChunker:
             if not words:
                 continue
 
-            if len(current) + len(words) > self.chunk_size:
-                if current:
-                    chunks.append(" ".join(current))
-                    current = current[-self.overlap:]
-                if len(words) > self.chunk_size:
-                    chunks.append(" ".join(words))
-                    current = []
-                    continue
+            if len(current) + len(words) <= self.chunk_size:
+                current.extend(words)
+                continue
 
-            current.extend(words)
+            if current:
+                chunks.append(" ".join(current))
+                current = current[-self.overlap:]
+
+            if len(words) > self.chunk_size:
+                start = 0
+                while start < len(words):
+                    end = min(start + self.chunk_size, len(words))
+                    chunks.append(" ".join(words[start:end]))
+                    if end == len(words):
+                        break
+                    start = max(end - self.overlap, start + 1)
+                current = []
+            else:
+                current = words
 
         if current:
             chunks.append(" ".join(current))
