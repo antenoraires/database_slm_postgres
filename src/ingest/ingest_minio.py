@@ -115,3 +115,11 @@ def listar_caminhos(
         caminhos.append(f"{bucket}/{obj.object_name}")
     
     return caminhos
+
+def listar_arquivos_pasta(pasta_local):
+    lista_arquivos = []
+    for root, dirs, files in os.walk(pasta_local):
+        for file in files:
+            if file.lower().endswith(('.pdf', '.txt')):
+                lista_arquivos.append(os.path.join(root, file))
+    return lista_arquivos

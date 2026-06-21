@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 
 from minio import Minio
-from src.ingest.ingest_minio import ingest_documento, listar_caminhos
+from src.ingest.ingest_minio import ingest_documento, listar_caminhos, listar_arquivos_pasta
 
 load_dotenv()
 
@@ -16,8 +16,8 @@ MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
 #path_local = "assents/WMamba.pdf"
 #path_local = "assents/Fake-Mamba.pdf"
 #path_local = "assents/Shallow.pdf"  
-path_local = None
 BUCKET_NAME = "documentos"
+pasta_local = "assents"  
 
 client = Minio(
     MINIO_ENDPOINT,
@@ -28,19 +28,19 @@ client = Minio(
 
 p = Pipeline()
 
-if path_local is not None:
+for path_local in listar_arquivos_pasta(pasta_local):
     resultado = ingest_documento(
         client,
         path_local,
         BUCKET_NAME,
         nome_no_minio=os.path.basename(path_local),
-        tipo="pdf",
+        tipo= "pdf" if path_local.lower().endswith('.pdf') else "txt",
         titulo=os.path.basename(path_local),
         metadata={
             "x-amz-meta-origem": "upload-usuario",
             "x-amz-meta-tipo": "documento"
         },
-        salvar_txt_em=f"assents/{os.path.splitext(os.path.basename(path_local))[0]}.txt"
+        salvar_txt_em=f"assents/backup/{os.path.splitext(os.path.basename(path_local))[0]}.txt"
     )
     print("Upload + ingestão concluídos:", resultado)
 
