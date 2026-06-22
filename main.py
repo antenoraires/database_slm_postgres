@@ -1,3 +1,5 @@
+# esse cara processa os arquivos PDF e TXT, faz chunking, gera embeddings e salva no banco de dados
+
 from src.pipeline import Pipeline
 
 import os
@@ -23,7 +25,8 @@ client = Minio(
 )
 
 # iniciando pipeline
-p = Pipeline()
+# pode optar por doclinght, pypdf2, etc. conforme necessidade
+p = Pipeline(pdf_backend="docling")  # ou "pypdf2"
 
 for path_local in listar_arquivos_pasta(pasta_local):
     resultado = ingest_documento(
@@ -40,10 +43,3 @@ for path_local in listar_arquivos_pasta(pasta_local):
         salvar_txt_em=f"assents/backup/{os.path.splitext(os.path.basename(path_local))[0]}.txt"
     )
     print("Upload + ingestão concluídos:", resultado)
-
-# Busca inteligente
-resultados = p.buscar("rostos gerados por GAN?", top_k=5)
-
-for r in resultados:
-    print(f"Score: {r['similaridade']:.3f}")
-    print(f"Trecho: {r['texto'][:300]}...\n")
