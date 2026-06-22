@@ -5,15 +5,42 @@ from pathlib import Path
 import re
 import unicodedata
 
+try:
+    from docling.document_converter import DocumentConverter
+    docling_converter = DocumentConverter()
+except ImportError:
+    docling_converter = None
+
 class TextExtractor:
+    def __init__(self, pdf_backend: str = "pypdf2"):
+        self.pdf_backend = pdf_backend.lower()
+        if self.pdf_backend not in {"pypdf2", "docling"}:
+            print(f"Aviso: backend '{pdf_backend}' não reconhecido. Usando 'pypdf2'.")
+            self.pdf_backend = "pypdf2"
+
+    def from_pdf(self, caminho: str) -> str:
+        if self.pdf_backend == "docling":
+            return self.from_pdf_docling(caminho)
+        return self.from_pdf_pypdf2(caminho)
+
     @staticmethod
-    def from_pdf(caminho: str) -> str:
+    def from_pdf_pypdf2(caminho: str) -> str:
         texto = ""
         with open(caminho, 'rb') as f:
             leitor = PyPDF2.PdfReader(f)
             for pagina in leitor.pages:
                 texto += pagina.extract_text() + "\n"
         return TextExtractor.clean_text(texto)
+
+    @staticmethod
+    def from_pdf_docling(caminho: str) -> str:
+        try:
+            result = docling_converter.convert(caminho)
+            texto = result.document.export_to_markdown()
+            return TextExtractor.clean_text(texto)
+        except Exception as e:
+            print(f"Erro ao processar PDF com Docling: {e}. Voltando para PyPDF2.")
+            return TextExtractor.from_pdf_pypdf2(caminho)
     
     @staticmethod
     def from_url(url: str) -> str:

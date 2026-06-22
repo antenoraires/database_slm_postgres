@@ -5,8 +5,8 @@ from src.embedding.vector_store import VectorStore
 from src.config import CHUNK_SIZE, CHUNK_OVERLAP
 
 class Pipeline:
-    def __init__(self):
-        self.extractor = TextExtractor()
+    def __init__(self, pdf_backend: str = "pypdf2"):
+        self.extractor = TextExtractor(pdf_backend=pdf_backend)
         self.chunker = TextChunker(CHUNK_SIZE, CHUNK_OVERLAP)
         self.vector_store = VectorStore()
     
